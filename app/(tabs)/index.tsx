@@ -20,7 +20,8 @@ type BehaviorKey =
 type BehaviorCounts = Record<BehaviorKey, number>;
 
 const HomeScreen = () => {
-  const { data, loading, error } = useFirestore('detections');
+  // Get ALL entries for the pie chart (no limit)
+  const { data: allData, loading, error } = useFirestore('detections');
 
   const processBehaviorData = (): BehaviorCounts => {
     const behaviorCounts: BehaviorCounts = {
@@ -36,7 +37,7 @@ const HomeScreen = () => {
       'Drinking': 0
     };
 
-    data.forEach(item => {
+    allData.forEach(item => {
       const behavior = formatBehaviorName(item.result) as BehaviorKey;
       if (behaviorCounts.hasOwnProperty(behavior)) {
         behaviorCounts[behavior]++;
@@ -54,7 +55,7 @@ const HomeScreen = () => {
       .join(' ');
   };
 
-  const totalDetections = data.length;
+  const totalDetections = allData.length;
 
   if (loading) {
     return (

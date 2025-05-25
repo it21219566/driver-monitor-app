@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { collection, getDocs, query, orderBy, limit, DocumentData } from 'firebase/firestore';
 import { db } from '../firebaseConfig';
 
-export const useFirestore = <T extends DocumentData>(collectionName: string) => {
+export const useFirestore = <T extends DocumentData>(collectionName: string, options?: { limit?: number }) => {
   const [data, setData] = useState<T[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
@@ -10,19 +10,22 @@ export const useFirestore = <T extends DocumentData>(collectionName: string) => 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Query with sorting and limit
-        const q = query(
-          collection(db, collectionName),
-          orderBy('timestamp', 'desc'),
-          limit(10)
-        );
+        let q = query(collection(db, collectionName));
         
+        // Apply sorting and limiting only if options are provided
+        if (options?.limit) {
+          q = query(
+            collection(db, collectionName),
+            orderBy('timestamp', 'desc'),
+            limit(options.limit)
+          );
+        }
+
         const querySnapshot = await getDocs(q);
         const items = querySnapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data()
+          id: doc.id,
+          ...doc.data()
         })) as unknown as T[];
-        
         setData(items);
       } catch (err) {
         setError(err as Error);
@@ -32,7 +35,7 @@ export const useFirestore = <T extends DocumentData>(collectionName: string) => 
     };
 
     fetchData();
-  }, [collectionName]);
+  }, [collectionName, options?.limit]);
 
   return { data, loading, error };
 };
