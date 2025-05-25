@@ -1,7 +1,12 @@
 import React from 'react';
 import { View, Text, FlatList, ActivityIndicator, StyleSheet } from 'react-native';
 import { useFirestore } from '../../hooks/useFirestore';
-import { Detection } from '../../types/detections';
+
+interface Detection {
+  id: string;
+  result: string;
+  timestamp: string;
+}
 
 const ExploreScreen = () => {
   const { data, loading, error } = useFirestore<Detection>('detections');
